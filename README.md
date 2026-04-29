@@ -4,7 +4,7 @@ This interface is a **parameter-driven web application**. It uses **URL Query Pa
 
 ## 🛠 How to Use (URL Construction)
 
-To customize the page, append specific keys and values to your URL starting with a `?`. Use `&` to separate different parameters.
+To customize the page, append specific keys and values  to your URL starting with a `?`. Use `&` to separate different parameters.
 
 ### Base URL
 `http://127.0.0.1:5500/dynamicFileUpload.html`
