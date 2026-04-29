@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Document Upload</title>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&family=Fira+Code:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #e0e5ec;
+      --text: #4a5568;
+      --text-light: #718096;
+      --text-dark: #2d3748;
+      --accent: #6c63ff;
+      --accent-light: #8b85ff;
+      --success: #38a169;
+      --success-light: #48bb78;
+
+      --shadow-raised:   8px 8px 18px #b8bec9, -8px -8px 18px #ffffff;
+      --shadow-pressed:  inset 5px 5px 12px #b8bec9, inset -5px -5px 12px #ffffff;
+      --shadow-subtle:   4px 4px 10px #b8bec9, -4px -4px 10px #ffffff;
+      --shadow-card:     16px 16px 40px #b8bec9, -16px -16px 40px #ffffff;
+      --shadow-icon:     6px 6px 14px #b8bec9, -6px -6px 14px #ffffff;
+    }
+
+    html, body { min-height: 100vh; background: var(--bg); font-family: 'Nunito', sans-serif; color: var(--text); overflow-x: hidden; }
+
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background-image:
+        linear-gradient(rgba(108,99,255,0.07) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(108,99,255,0.07) 1px, transparent 1px);
+      background-size: 60px 60px;
+      pointer-events: none; z-index: 0;
+    }
+
+    .particles { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
+    .particle {
+      position: absolute; border-radius: 50%; background: var(--accent);
+      animation: floatParticle linear infinite; opacity: 0;
+    }
+    @keyframes floatParticle {
+      0%   { transform: translateY(100vh); opacity: 0; }
+      10%  { opacity: 0.35; }
+      90%  { opacity: 0.15; }
+      100% { transform: translateY(-10vh) translateX(20px); opacity: 0; }
+    }
+
+    .orb { position: fixed; border-radius: 50%; pointer-events: none; z-index: 0; animation: orbDrift ease-in-out infinite alternate; opacity: 0.18; filter: blur(70px); }
+    .orb1 { width: 380px; height: 380px; background: #c5c0f5; top: -120px; left: -100px; animation-duration: 14s; }
+    .orb2 { width: 280px; height: 280px; background: #a8d8ea; bottom: -80px; right: -80px; animation-duration: 18s; animation-delay: -6s; }
+    .orb3 { width: 180px; height: 180px; background: #b2e0c8; top: 40%; right: 10%; animation-duration: 11s; animation-delay: -3s; }
+    @keyframes orbDrift { 0% { transform: translate(0,0) scale(1); } 100% { transform: translate(30px,40px) scale(1.08); } }
+
+    .scene {
+      position: relative; z-index: 1; min-height: 100vh;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      padding: 24px 20px;
+    }
+
+    /* ── ERROR STATE ── */
+    .error-card {
+      width: 100%; max-width: 540px;
+      background: var(--bg); border-radius: 28px;
+      box-shadow: var(--shadow-card);
+      padding: 36px 28px; text-align: center;
+      animation: floatUp 0.8s cubic-bezier(.22,1,.36,1) both;
+    }
+    .error-icon { font-size: 40px; margin-bottom: 16px; }
+    .error-title {
+      font-family: 'Space Grotesk', sans-serif; font-size: 20px; font-weight: 700;
+      color: #e53e3e; margin-bottom: 10px;
+    }
+    .error-msg {
+      font-family: 'Fira Code', monospace; font-size: 10px; color: var(--text-light);
+      line-height: 1.8; letter-spacing: 0.04em;
+    }
+    .error-example {
+      margin-top: 20px; background: var(--bg);
+      box-shadow: var(--shadow-pressed);
+      border-radius: 14px; padding: 14px 18px;
+      font-family: 'Fira Code', monospace; font-size: 9px;
+      color: var(--accent); text-align: left; line-height: 2;
+      word-break: break-all;
+    }
+    .error-example strong { color: var(--text-dark); display: block; margin-bottom: 6px; font-size: 10px; }
+
+    /* ── HEADER ── */
+    .header { text-align: center; margin-bottom: 20px; animation: floatUp 0.8s cubic-bezier(.22,1,.36,1) both; }
+    .badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: var(--bg); box-shadow: var(--shadow-subtle);
+      border-radius: 100px; padding: 6px 16px 6px 12px;
+      font-family: 'Fira Code', monospace; font-size: 9.5px;
+      letter-spacing: 0.12em; color: var(--accent); text-transform: uppercase; margin-bottom: 14px;
+    }
+    .badge-dot {
+      width: 8px; height: 8px; background: var(--accent); border-radius: 50%;
+      box-shadow: 0 0 6px var(--accent); animation: pulseDot 2.5s ease infinite;
+    }
+    @keyframes pulseDot { 0%,100%{transform:scale(1);opacity:1;} 50%{transform:scale(0.6);opacity:0.5;} }
+
+    h1 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: clamp(24px, 3.8vw, 36px); font-weight: 700;
+      letter-spacing: -0.03em; color: var(--text-dark); line-height: 1.05; margin-bottom: 6px;
+    }
+    .subtitle { font-family: 'Fira Code', monospace; font-size: 10.5px; color: var(--text-light); letter-spacing: 0.08em; font-weight: 300; }
+
+    /* ── BANNER ── */
+    .banner {
+      width: 100%; max-width: 540px; background: var(--bg); border-radius: 18px;
+      box-shadow: var(--shadow-subtle); padding: 13px 18px;
+      display: flex; align-items: center; gap: 14px; margin-bottom: 16px;
+      animation: floatUp 0.9s cubic-bezier(.22,1,.36,1) 0.05s both;
+      position: relative; overflow: hidden;
+    }
+    .banner::before {
+      content: ''; position: absolute; left: 0; top: 8px; bottom: 8px; width: 4px;
+      background: linear-gradient(to bottom, var(--success), var(--success-light));
+      border-radius: 0 4px 4px 0;
+    }
+    .banner-icon {
+      width: 36px; height: 36px; background: var(--bg); border-radius: 12px;
+      box-shadow: var(--shadow-icon); display: flex; align-items: center; justify-content: center;
+      font-size: 16px; flex-shrink: 0;
+    }
+    .banner-title { font-family: 'Space Grotesk', sans-serif; font-size: 13px; font-weight: 600; color: var(--success); margin-bottom: 3px; }
+    .banner-msg { font-family: 'Fira Code', monospace; font-size: 9.5px; font-weight: 300; color: var(--text-light); letter-spacing: 0.03em; line-height: 1.6; }
+
+    /* ── LOADING CARD ── */
+    .loading-dock { width: 100%; max-width: 540px; margin-bottom: 16px; animation: floatUp 0.9s cubic-bezier(.22,1,.36,1) 0.1s both; }
+    .loading-card {
+      background: var(--bg); border-radius: 22px;
+      box-shadow: 12px 12px 32px #b8bec9, -12px -12px 32px #ffffff, 0 -4px 20px rgba(108,99,255,0.06);
+      padding: 15px 20px 17px; position: relative; overflow: hidden;
+    }
+    .loading-card::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+      border-radius: 22px 22px 0 0;
+      background: linear-gradient(90deg, transparent 0%, var(--accent) 30%, var(--accent-light) 50%, var(--accent) 70%, transparent 100%);
+      background-size: 200% 100%; animation: barSlide 1.8s linear infinite;
+    }
+    @keyframes barSlide { 0%{background-position:100% 0;} 100%{background-position:-100% 0;} }
+
+    .loading-top { display: flex; align-items: center; gap: 16px; margin-bottom: 11px; }
+    .spinner-wrap {
+      width: 46px; height: 46px; border-radius: 50%; background: var(--bg);
+      box-shadow: var(--shadow-icon); display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; position: relative;
+    }
+    .spinner-ring { position: absolute; width: 32px; height: 32px; border-radius: 50%; border: 3px solid transparent; border-top-color: var(--accent); border-right-color: var(--accent-light); animation: spinRing 1s linear infinite; }
+    .spinner-ring-2 { position: absolute; width: 22px; height: 22px; border-radius: 50%; border: 2px solid transparent; border-bottom-color: rgba(108,99,255,0.3); animation: spinRing 1.6s linear infinite reverse; }
+    .spinner-core { width: 12px; height: 12px; border-radius: 50%; background: var(--bg); box-shadow: inset 2px 2px 4px #b8bec9, inset -2px -2px 4px #ffffff; }
+    @keyframes spinRing { to { transform: rotate(360deg); } }
+
+    .loading-text { flex: 1; }
+    .loading-title { font-family: 'Space Grotesk', sans-serif; font-size: 13px; font-weight: 600; color: var(--text-dark); letter-spacing: -0.01em; margin-bottom: 4px; display: flex; align-items: center; gap: 4px; }
+    .bounce-dots span { display: inline-block; width: 4px; height: 4px; border-radius: 50%; background: var(--accent); animation: bounceDot 1.2s ease infinite; }
+    .bounce-dots span:nth-child(2) { animation-delay: 0.18s; }
+    .bounce-dots span:nth-child(3) { animation-delay: 0.36s; }
+    @keyframes bounceDot { 0%,80%,100%{transform:translateY(0);opacity:0.4;} 40%{transform:translateY(-5px);opacity:1;} }
+    .loading-msg { font-family: 'Fira Code', monospace; font-size: 9.5px; font-weight: 300; color: var(--text-light); letter-spacing: 0.03em; line-height: 1.55; }
+
+    .loading-bar-track { height: 7px; border-radius: 10px; background: var(--bg); box-shadow: var(--shadow-pressed); overflow: hidden; position: relative; }
+    .loading-bar-fill { height: 100%; width: 45%; border-radius: 10px; background: linear-gradient(90deg, transparent, var(--accent), var(--accent-light), transparent); animation: indeterminate 1.7s ease-in-out infinite; }
+    @keyframes indeterminate { 0%{transform:translateX(-120%);} 100%{transform:translateX(320%);} }
+
+    .loading-chips { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+    .chip { background: var(--bg); border-radius: 100px; box-shadow: var(--shadow-subtle); padding: 4px 12px; font-family: 'Fira Code', monospace; font-size: 8.5px; font-weight: 400; letter-spacing: 0.08em; color: var(--text-light); display: flex; align-items: center; gap: 6px; }
+    .chip-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--accent); animation: chipPulse 2s ease infinite; }
+    .chip:nth-child(2) .chip-dot { animation-delay: 0.5s; background: #3182ce; }
+    .chip:nth-child(3) .chip-dot { animation-delay: 1s; background: var(--success); }
+    @keyframes chipPulse { 0%,100%{opacity:0.4;transform:scale(0.8);} 50%{opacity:1;transform:scale(1.3);} }
+
+    /* ── CARD ── */
+    .card { width: 100%; max-width: 540px; background: var(--bg); border-radius: 28px; box-shadow: var(--shadow-card); padding: 24px; animation: floatUp 0.9s cubic-bezier(.22,1,.36,1) 0.15s both; }
+
+    .file-rows { display: flex; flex-direction: column; gap: 11px; }
+    .file-row { animation: floatUp 0.7s cubic-bezier(.22,1,.36,1) both; }
+
+    .file-label {
+      display: flex; align-items: center; gap: 14px; background: var(--bg); border-radius: 18px;
+      padding: 13px 18px; position: relative; cursor: default !important; pointer-events: none !important;
+      transition: box-shadow 0.3s ease; box-shadow: var(--shadow-raised);
+    }
+    .file-label.has-file { box-shadow: var(--shadow-pressed); }
+
+    .file-icon {
+      width: 46px; height: 46px; border-radius: 14px; display: flex; align-items: center;
+      justify-content: center; flex-shrink: 0; box-shadow: var(--shadow-icon); background: var(--bg); position: relative;
+    }
+    .file-icon svg { width: 22px; height: 22px; }
+
+    /* Accent underline per icon index */
+    .file-icon[data-idx="0"]::after { content:''; position:absolute; bottom:3px; left:6px; right:6px; height:2px; background:#6c63ff; border-radius:2px; opacity:0.5; }
+    .file-icon[data-idx="1"]::after { content:''; position:absolute; bottom:3px; left:6px; right:6px; height:2px; background:#3182ce; border-radius:2px; opacity:0.5; }
+    .file-icon[data-idx="2"]::after { content:''; position:absolute; bottom:3px; left:6px; right:6px; height:2px; background:#38a169; border-radius:2px; opacity:0.5; }
+    .file-icon[data-idx="3"]::after { content:''; position:absolute; bottom:3px; left:6px; right:6px; height:2px; background:#d69e2e; border-radius:2px; opacity:0.5; }
+    .file-icon[data-idx="4"]::after { content:''; position:absolute; bottom:3px; left:6px; right:6px; height:2px; background:#e53e3e; border-radius:2px; opacity:0.5; }
+    .file-icon[data-idx="5"]::after { content:''; position:absolute; bottom:3px; left:6px; right:6px; height:2px; background:#805ad5; border-radius:2px; opacity:0.5; }
+
+    .file-info { flex: 1; min-width: 0; }
+    .file-title { font-family: 'Space Grotesk', sans-serif; font-size: 13.5px; font-weight: 600; color: var(--text-dark); margin-bottom: 3px; letter-spacing: -0.01em; }
+    .file-status { font-family: 'Fira Code', monospace; font-size: 9.5px; font-weight: 300; color: var(--text-light); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; letter-spacing: 0.02em; transition: color 0.3s ease; }
+    .file-label.has-file .file-status { color: var(--success); }
+
+    .check-badge {
+      width: 28px; height: 28px; border-radius: 50%; background: var(--bg); box-shadow: var(--shadow-subtle);
+      display: flex; align-items: center; justify-content: center; font-size: 12px; flex-shrink: 0;
+      opacity: 0; transform: scale(0.5); transition: all 0.35s cubic-bezier(.34,1.56,.64,1);
+    }
+    .file-label.has-file .check-badge { opacity: 1; transform: scale(1); }
+
+    input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: default; width: 100%; height: 100%; z-index: 2; pointer-events: none; }
+
+    /* ── STATUS BAR ── */
+    .status-bar {
+      margin-top: 16px; background: var(--bg); border-radius: 16px; padding: 12px 18px;
+      display: flex; align-items: center; justify-content: space-between;
+      box-shadow: var(--shadow-pressed);
+    }
+    .status-left { display: flex; align-items: center; gap: 14px; }
+    .count-pill { background: var(--bg); border-radius: 12px; box-shadow: var(--shadow-icon); padding: 6px 14px; text-align: center; }
+    .status-count { font-family: 'Space Grotesk', sans-serif; font-size: 24px; font-weight: 700; color: var(--accent); line-height: 1; letter-spacing: -0.03em; transition: color 0.4s ease; }
+    .count-sub { font-family: 'Fira Code', monospace; font-size: 8.5px; font-weight: 300; color: var(--text-light); letter-spacing: 0.06em; margin-top: 2px; }
+    .status-label { font-family: 'Fira Code', monospace; font-size: 9.5px; font-weight: 400; color: var(--text-light); letter-spacing: 0.08em; line-height: 1.6; text-transform: uppercase; }
+
+    .progress-dots { display: flex; gap: 9px; align-items: center; flex-wrap: wrap; justify-content: flex-end; max-width: 160px; }
+    .dot { width: 12px; height: 12px; border-radius: 50%; background: var(--bg); box-shadow: var(--shadow-subtle); transition: all 0.4s ease; }
+    .dot.active { box-shadow: inset 3px 3px 6px #b8bec9, inset -3px -3px 6px #ffffff, 0 0 0 3px rgba(56,161,105,0.25); }
+    .dot.active::after { content: ''; display: block; width: 6px; height: 6px; background: var(--success); border-radius: 50%; margin: 3px auto; box-shadow: 0 0 6px var(--success); }
+
+    .footer { margin-top: 14px; font-family: 'Fira Code', monospace; font-size: 9px; font-weight: 300; color: var(--text-light); letter-spacing: 0.16em; text-align: center; opacity: 0.5; animation: floatUp 0.7s ease 0.7s both; }
+
+    @keyframes floatUp { from{opacity:0;transform:translateY(22px);} to{opacity:1;transform:translateY(0);} }
+  </style>
+</head>
+<body>
+  <div class="orb orb1"></div>
+  <div class="orb orb2"></div>
+  <div class="orb orb3"></div>
+  <div class="particles" id="particles"></div>
+  <div class="scene" id="scene"></div>
+
+  <script>
+    // ── Particles ──
+    const pContainer = document.getElementById('particles');
+    for (let i = 0; i < 25; i++) {
+      const p = document.createElement('div');
+      p.className = 'particle';
+      p.style.cssText = `left:${Math.random()*100}%;animation-duration:${7+Math.random()*10}s;animation-delay:${Math.random()*10}s;width:${1+Math.random()*2}px;height:${1+Math.random()*2}px;`;
+      pContainer.appendChild(p);
+    }
+
+    // ══════════════════════════════════════════
+    //  URL PARAMETER PARSING
+    // ══════════════════════════════════════════
+    const params  = new URLSearchParams(window.location.search);
+    const title   = params.get('title')        || '';
+    const badge   = params.get('badge')        || 'DevOps Upload Pipeline';
+    const banner  = params.get('banner')       || '';
+    const bannerMsg = params.get('bannerMsg')  || 'Files are being uploaded to AppSheet.\nPlease be patient !!!!';
+    const filesRaw  = params.get('files')      || '';
+    const files   = filesRaw ? filesRaw.split(',').map(f => f.trim()).filter(Boolean) : [];
+
+    const scene = document.getElementById('scene');
+
+    // ── Validate ──
+    if (!title || files.length === 0) {
+      scene.innerHTML = `
+        <div class="error-card">
+          <div class="error-icon">⚠️</div>
+          <div class="error-title">Missing URL Parameters</div>
+          <div class="error-msg">
+            This page is driven by URL parameters.<br>
+            You must provide at least <code>title</code> and <code>files</code>.
+          </div>
+          <div class="error-example">
+            <strong>// Required params</strong>
+            ?title=DMS Document Upload<br>
+            &amp;files=GST Registration Invoice,Form 22<br><br>
+            <strong>// Optional params</strong>
+            &amp;badge=DevOps Upload Pipeline<br>
+            &amp;banner=DMS Invoice Completed<br>
+            &amp;bannerMsg=Files are being uploaded...
+          </div>
+        </div>`;
+      // Stop execution
+      throw new Error('Missing URL params');
+    }
+
+    // ── PDF icon SVG ──
+    const pdfSVG = `<svg viewBox="0 0 24 24" fill="none"><rect width="24" height="24" rx="4" fill="#FF0000" opacity="0.12"/><path d="M6 2h8l4 4v16H6V2z" fill="#FF1500" opacity="0.85"/><path d="M14 2l4 4h-4V2z" fill="#CC0000"/><text x="5" y="17" font-size="7" font-weight="900" font-family="Arial" fill="white" letter-spacing="-0.5">PDF</text></svg>`;
+
+    // ── Build file rows HTML ──
+    const fileRowsHTML = files.map((name, idx) => {
+      const id = name.replace(/\s+/g, '_');
+      const delay = (0.3 + idx * 0.08).toFixed(2);
+      return `
+        <div class="file-row" style="animation-delay:${delay}s">
+          <label class="file-label" id="label-${id}">
+            <input type="file" id="file-${id}" name="${id}">
+            <div class="file-icon" data-idx="${idx % 6}">${pdfSVG}</div>
+            <div class="file-info">
+              <div class="file-title">${name}</div>
+              <div class="file-status" id="status-${id}">No file selected</div>
+            </div>
+            <div class="check-badge">✓</div>
+          </label>
+        </div>`;
+    }).join('');
+
+    // ── Build progress dots HTML ──
+    const dotsHTML = files.map((_, idx) =>
+      `<div class="dot" id="dot-${idx}"></div>`
+    ).join('');
+
+    // ── Render full page ──
+    scene.innerHTML = `
+      <div class="header">
+        <div class="badge"><span class="badge-dot"></span>${badge}</div>
+        <h1>${title}</h1>
+        <p class="subtitle">// secure · parallel · automated</p>
+      </div>
+
+      ${banner ? `
+      <div class="banner">
+        <div class="banner-icon">✅</div>
+        <div>
+          <div class="banner-title">${banner}</div>
+          <div class="banner-msg">${bannerMsg.replace(/\\n/g,'<br>')}</div>
+        </div>
+      </div>` : ''}
+
+      <div class="loading-dock">
+        <div class="loading-card">
+          <div class="loading-top">
+            <div class="spinner-wrap">
+              <div class="spinner-ring"></div>
+              <div class="spinner-ring-2"></div>
+              <div class="spinner-core"></div>
+            </div>
+            <div class="loading-text">
+              <div class="loading-title">Uploading to AppSheet <span class="bounce-dots"><span></span><span></span><span></span></span></div>
+              <div class="loading-msg">Files are being uploaded to AppSheet, Please Wait... The page will be closed automatically once the upload is completed !</div>
+            </div>
+          </div>
+          <div class="loading-bar-track"><div class="loading-bar-fill"></div></div>
+          <div class="loading-chips">
+            <div class="chip"><span class="chip-dot"></span>CONNECTING</div>
+            <div class="chip"><span class="chip-dot"></span>TRANSFERRING</div>
+            <div class="chip"><span class="chip-dot"></span>VERIFYING</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="file-rows">${fileRowsHTML}</div>
+        <div class="status-bar">
+          <div class="status-left">
+            <div class="count-pill">
+              <div class="status-count" id="fileCount">0</div>
+              <div class="count-sub">/ ${files.length} files</div>
+            </div>
+            <div class="status-label">FILES<br>READY</div>
+          </div>
+          <div class="progress-dots">${dotsHTML}</div>
+        </div>
+      </div>
+
+      <div class="footer">NEUMORPHISM · AUTOMA v2 · GOOGLE DRIVE PIPELINE</div>
+    `;
+
+    // ── Wire up file inputs ──
+    files.forEach((name, idx) => {
+      const id     = name.replace(/\s+/g, '_');
+      const input  = document.getElementById(`file-${id}`);
+      const label  = document.getElementById(`label-${id}`);
+      const status = document.getElementById(`status-${id}`);
+      const dot    = document.getElementById(`dot-${idx}`);
+
+      input.addEventListener('change', () => {
+        if (input.files && input.files[0]) {
+          const f = input.files[0];
+          status.textContent = `✓ ${f.name} · ${(f.size/1024).toFixed(1)} KB`;
+          label.classList.add('has-file');
+          dot.classList.add('active');
+        } else {
+          status.textContent = 'No file selected';
+          label.classList.remove('has-file');
+          dot.classList.remove('active');
+        }
+        const count = files.filter(n => {
+          const el = document.getElementById(`file-${n.replace(/\s+/g,'_')}`);
+          return el && el.files && el.files[0];
+        }).length;
+        const countEl = document.getElementById('fileCount');
+        countEl.textContent = count;
+        countEl.style.color = count === files.length ? 'var(--success)' : 'var(--accent)';
+      });
+    });
+  </script>
+</body>
+</html>
