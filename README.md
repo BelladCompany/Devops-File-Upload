@@ -7,7 +7,7 @@ This interface is a **parameter-driven web application**. It uses **URL Query Pa
 To customize the page, append specific keys and values  to your URL starting with a `?`. Use `&` to separate different parameters.
 
 ### Base URL
-`http://127.0.0.1:5500/dynamicFileUpload.html`
+`https://belladcompany.github.io/Devops-File-Upload.html`
 
 ### Available Parameters
 
@@ -26,5 +26,5 @@ To customize the page, append specific keys and values  to your URL starting wit
 You can copy the link below and replace the values to test your configuration:
 
 ```text
-[http://127.0.0.1:5500/dynamicFileUpload.html?title=DMS%20Document%20Upload&files=DMS%20Registration%20Invoice,FORUM%2022,FORM%2023&badge=DevOps%20Upload%20Pipeline&banner=DMS%20Invoice%20Completed&bannerMsg=Files%20are%20being%20uploaded]
-(http://127.0.0.1:5500/dynamicFileUpload.html?title=RTO%20Document%20Upload&files=DMS%20Registration%20Invoice,FORUM%2022,FORUM123,HElloworld&badge=Deva%20Upload%20Pipeline&banner=DMS%20Invoice%20Completed&bannerMsg=Files%20are%20being%20uploaded)...
+[https://belladcompany.github.io/Devops-File-Upload/?title=DMS%20Document%20Upload%20&files=GST%20Registration%20Invoice,Form%2022&badge=DevOps%20Upload%20Pipeline%20&banner=DMS%20Invoice%20Completed%20&bannerMsg=Files%20are%20being%20uploaded...]
+(https://belladcompany.github.io/Devops-File-Upload/?title=DMS%20Document%20Upload%20&files=GST%20Registration%20Invoice,Form%2022&badge=DevOps%20Upload%20Pipeline%20&banner=DMS%20Invoice%20Completed%20&bannerMsg=Files%20are%20being%20uploaded...)...
